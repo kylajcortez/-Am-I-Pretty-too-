@@ -1,0 +1,104 @@
+---
+title: "class project"
+author: "kyla cortez"
+date: "4/19/2022"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+bodyimage <-Body_Positivity_Experiment_Dataset_SPSS_version
+
+View (bodyimage)
+
+library(VIM)
+library(mice)
+library(ggplot2)
+library(knitr)
+library(haven)
+library(dplyr)
+library(tibble)
+library(gtsummary)
+library(readr)
+library(tableone)
+library(Hmisc)
+library(jtools)
+library(xtable)
+```
+
+
+```{r}
+body_new <- bodyimage%>%
+  select(gender, AGE, Instagram, DietYES1, bmi, Q21_BAS1, Q21_BAS2, Q21_BAS3, Q21_BAS4,Q21_BAS5, Q21_BAS6, Q21_BAS7, Q21_BAS8, Q21_BAS9, Q21_BAS10, Q22_BSS1, Q22_BSS2, Q22_BSS3, Q22_BSS4,Q22_BSS5, Q22_BSS6, Q22_BSS7, Q22_BSS8, Q22_BSS9, Q22_BSS10, Q22_BSS11, Q22_BSS12, Q22_BSS13, Q22_BSS14, Q22_BSS15, Q22_BSS16)
+  
+body_new[body_new$AGE != 999, ]
+# create new dataset without missing data
+completebody_new <- body_new[complete.cases(body_new), ]
+
+    
+#Sum of control variable
+completebody_new <- completebody_new %>% rowwise() %>%
+  mutate(BodyImageScore = sum(c_across(Q21_BAS1:Q21_BAS10)))
+  
+# Sum of dependent variable
+completebody_new <- completebody_new %>% rowwise() %>%
+  mutate(BodySatisfactionScore = sum(c_across(Q22_BSS1:Q22_BSS16)))
+
+complete_body <- completebody_new %>%
+        select (gender, AGE, Instagram, DietYES1, bmi, BodyImageScore, BodySatisfactionScore)
+        
+View (complete_body)
+```
+
+
+```{r}
+# Descriptive tables
+summary (complete_body)
+
+CreateTableOne(data = complete_body)
+
+Table<-CreateTableOne(data = complete_body)
+
+summary(Table)
+```
+
+
+```{r}
+bodycor<-round(cor(complete_body),2)
+bodycor
+
+# Hide upper triangle
+upper<-bodycor
+upper[upper.tri(bodycor)]<-""
+upper<-as.data.frame(upper)
+upper
+
+print(xtable(upper), type="html")
+```
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
